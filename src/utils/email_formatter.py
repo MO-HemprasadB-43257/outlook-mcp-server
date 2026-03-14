@@ -1,11 +1,23 @@
 """Simple email formatting for AI-readable responses."""
 # Author: Hemprasad Badgujar
 
+import json
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from ..config.config_reader import config
+
+
+def _serialize_for_json(val: Any) -> Any:
+    """Make value JSON-serializable (datetime -> isoformat, etc.)."""
+    if hasattr(val, "isoformat") and callable(getattr(val, "isoformat")):
+        return val.isoformat()
+    if isinstance(val, dict):
+        return {k: _serialize_for_json(v) for k, v in val.items()}
+    if isinstance(val, (list, tuple)):
+        return [_serialize_for_json(v) for v in val]
+    return val
 
 
 def format_mailbox_status(access_result: Dict[str, Any]) -> Dict[str, Any]:
@@ -103,6 +115,47 @@ def format_email_chain(
         "conversations": formatted_conversations,
         "all_emails_chronological": [fmt(email) for email in sorted_emails],
     }
+
+
+def format_email_chain_to_json(formatted: Dict[str, Any]) -> str:
+    """Return formatted email chain as JSON string for MCP tool response (structured, parseable per MCP)."""
+    return json.dumps(_serialize_for_json(formatted), indent=2, default=str)
+
+
+def format_email_chain_pretty_text(formatted: Dict[str, Any], width: int = 72) -> str:
+    """Return formatted email chain as readable plain text (for scripts like list_latest_emails, not for MCP)."""
+    lines: List[str] = []
+    status = formatted.get("status", "")
+    if status == "no_emails_found":
+        return formatted.get("message", "No emails found.")
+    summary = formatted.get("summary", {})
+    total = summary.get("total_emails", 0)
+    conv_count = summary.get("conversations", 0)
+    date_range = summary.get("date_range", {})
+    lines.append(f"  Total: {total} email(s)  |  Conversations: {conv_count}")
+    if date_range:
+        lines.append(f"  Date range: {date_range.get('first', '')} → {date_range.get('last', '')}")
+    lines.append("")
+    emails = formatted.get("all_emails_chronological", [])
+    for i, email in enumerate(emails, 1):
+        subject = email.get("subject", "No Subject")
+        sender = email.get("sender_name", "Unknown")
+        sender_email = email.get("sender_email", "")
+        from_line = f"{sender} <{sender_email}>" if sender_email else sender
+        received = email.get("received_time") or ""
+        body = (email.get("body") or email.get("body_preview", "")) or ""
+        body_preview = (body[:200] + "…") if len(body) > 200 else body
+        lines.append("─" * width)
+        lines.append(f"  [{i}]  {subject}")
+        lines.append("─" * width)
+        lines.append(f"  From:   {from_line}")
+        lines.append(f"  Date:   {received}")
+        if body_preview:
+            lines.append(f"  Body:   {body_preview.strip()[:500]}")
+        lines.append("")
+    if emails:
+        lines.append("─" * width)
+    return "\n".join(lines)
 
 
 # --- Reserved for future alert tool: format_alert_analysis and helpers below ---
@@ -381,16 +434,24 @@ def get_importance_text(importance: int) -> str:
     return importance_map.get(importance, "Normal")
 
 
+def _to_naive_utc(dt: datetime) -> datetime:
+    """Convert to naive UTC to avoid comparing offset-aware with offset-naive."""
+    if getattr(dt, "tzinfo", None) is None:
+        return dt
+    return dt.astimezone(timezone.utc).replace(tzinfo=None)
+
+
 def parse_iso_time(iso_string: Optional[Any]) -> datetime:
     """Parse ISO timestamp string or datetime to datetime. Returns datetime.min on invalid input."""
     if iso_string is None:
         return datetime.min
     if hasattr(iso_string, "isoformat") and hasattr(iso_string, "date"):
-        return iso_string  # type: ignore[return-value]
+        return _to_naive_utc(iso_string)  # type: ignore[arg-type]
     if not isinstance(iso_string, str):
         return datetime.min
     try:
-        return datetime.fromisoformat(iso_string.replace("Z", "+00:00"))
+        dt = datetime.fromisoformat(iso_string.replace("Z", "+00:00"))
+        return _to_naive_utc(dt) if getattr(dt, "tzinfo", None) else dt
     except (ValueError, AttributeError):
         return datetime.min
 
@@ -400,6 +461,8 @@ def _ensure_datetime(val: Any) -> Optional[datetime]:
     if val is None:
         return None
     if hasattr(val, "isoformat") and hasattr(val, "date"):
+        if isinstance(val, datetime):
+            return _to_naive_utc(val)
         return val  # type: ignore[return-value]
     if isinstance(val, str):
         dt = parse_iso_time(val)

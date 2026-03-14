@@ -25,7 +25,7 @@ try:
     from src.config.config_reader import config
     from src.tools.outlook_tools import get_tools
     from src.utils.outlook_client import outlook_client
-    from src.utils.email_formatter import format_mailbox_status, format_email_chain
+    from src.utils.email_formatter import format_mailbox_status, format_email_chain, format_email_chain_to_json
 except ImportError as e:
     print(f"[ERROR] Import Error: {e}")
     print("\n[INFO] Please install required dependencies:")
@@ -93,7 +93,7 @@ async def handle_get_email_chain(
         )
         formatted_result = format_email_chain(emails, search_text, include_body=include_body)
         logger.info("Found %s emails containing '%s'", len(emails), search_text)
-        return [types.TextContent(type="text", text=str(formatted_result))]
+        return [types.TextContent(type="text", text=format_email_chain_to_json(formatted_result))]
     except Exception as e:
         logger.exception("Error searching emails: %s", e)
         error_response = {
@@ -123,7 +123,7 @@ async def handle_get_latest_emails(
         )
         formatted_result = format_email_chain(emails, "latest", include_body=include_body)
         logger.info("Returned %s latest emails", len(emails))
-        return [types.TextContent(type="text", text=str(formatted_result))]
+        return [types.TextContent(type="text", text=format_email_chain_to_json(formatted_result))]
     except Exception as e:
         logger.exception("Error fetching latest emails: %s", e)
         error_response = {

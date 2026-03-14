@@ -98,7 +98,7 @@ Runs on any OS (e.g. Linux in CI). Tests config loading and email formatting onl
 ```bash
 cd Outlook-MCP-Server
 pip install -r requirements-ci.txt
-python -m pytest tests/test_config_reader.py tests/test_email_formatter.py -v
+python -m pytest tests/test_config_reader.py tests/test_email_formatter.py tests/test_tools.py tests/test_get_latest_emails.py -v
 ```
 
 If you run from another directory, set `PYTHONPATH` to the project root (e.g. `set PYTHONPATH=.` on Windows cmd, or `$env:PYTHONPATH="."` on PowerShell).
@@ -126,7 +126,7 @@ python -m mypy src outlook_mcp.py
 On push/PR, GitHub Actions runs:
 
 - **Lint:** flake8 and mypy on `src` and `outlook_mcp.py`
-- **Tests:** pytest on `test_config_reader.py` and `test_email_formatter.py` (using `requirements-ci.txt`, so no pywin32 on Linux)
+- **Tests:** pytest on `test_config_reader.py`, `test_email_formatter.py`, `test_tools.py`, and `test_get_latest_emails.py` (using `requirements-ci.txt`, so no pywin32 on Linux; tool tests use a mocked Outlook client)
 
 Full end-to-end testing (Outlook connection and search) must be done manually on Windows with Outlook installed.
 
@@ -430,7 +430,9 @@ Outlook-MCP-Server/
     ├── conftest.py
     ├── test_config_reader.py
     ├── test_email_formatter.py
-    └── test_connection.py     # Windows + Outlook
+    ├── test_tools.py             # Tool schemas + call_tool with mocked Outlook
+    ├── test_get_latest_emails.py  # get_latest_emails tool only
+    └── test_connection.py    # Windows + Outlook
 ```
 
 ---

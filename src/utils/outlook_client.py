@@ -6,7 +6,7 @@ import random
 import re
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set
 
 import pythoncom
@@ -28,22 +28,31 @@ def _shared_mailbox_emails() -> List[str]:
     return []
 
 
+def _to_naive_utc(dt: datetime) -> datetime:
+    """Convert to naive UTC so we never compare offset-aware with offset-naive."""
+    if dt.tzinfo is None:
+        return dt
+    return dt.astimezone(timezone.utc).replace(tzinfo=None)
+
+
 def _received_time_for_sort(email: Dict[str, Any]) -> datetime:
     """Normalize received_time to datetime for reliable sorting (handles COM dates)."""
     val = email.get("received_time")
     if val is None:
         return datetime.min
     if isinstance(val, datetime):
-        return val
+        return _to_naive_utc(val)
     try:
         if hasattr(val, "timestamp"):
             return datetime.fromtimestamp(val.timestamp())
         if hasattr(val, "isoformat"):
-            return datetime.fromisoformat(val.isoformat())
+            dt = datetime.fromisoformat(val.isoformat())
+            return _to_naive_utc(dt) if getattr(dt, "tzinfo", None) else dt
     except (ValueError, OSError, TypeError):
         pass
     try:
-        return datetime.fromisoformat(str(val))
+        dt = datetime.fromisoformat(str(val).replace("Z", "+00:00"))
+        return _to_naive_utc(dt) if getattr(dt, "tzinfo", None) else dt
     except (ValueError, TypeError):
         return datetime.min
 
@@ -621,13 +630,19 @@ class OutlookClient:
                     recipient_count += 1
             except Exception as recv_err:
                 logger.debug("Error reading recipients: %s", recv_err)
-            
+
+            rt = getattr(item, "ReceivedTime", None)
+            if rt is None:
+                rt = datetime.now()
+            elif isinstance(rt, datetime):
+                rt = _to_naive_utc(rt)
+
             email_data = {
                 'subject': getattr(item, 'Subject', 'No Subject'),
                 'sender_name': getattr(item, 'SenderName', 'Unknown'),
                 'sender_email': getattr(item, 'SenderEmailAddress', ''),
                 'recipients': recipients,
-                'received_time': getattr(item, 'ReceivedTime', datetime.now()),
+                'received_time': rt,
                 'folder_name': folder_name,
                 'mailbox_type': mailbox_type,
                 'importance': getattr(item, 'Importance', 1),
