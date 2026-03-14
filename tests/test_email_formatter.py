@@ -1,4 +1,6 @@
 """Unit tests for email formatter (no Outlook required)."""
+# Author: Hemprasad Badgujar
+
 import sys
 from pathlib import Path
 

@@ -1,4 +1,5 @@
 """MCP tool definitions for Outlook (check_mailbox_access, get_email_chain)."""
+# Author: Hemprasad Badgujar
 
 from mcp import types
 

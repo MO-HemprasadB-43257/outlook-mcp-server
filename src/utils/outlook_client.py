@@ -1,4 +1,5 @@
 """High-performance Outlook client for mailbox access and email search."""
+# Author: Hemprasad Badgujar
 
 import logging
 import random

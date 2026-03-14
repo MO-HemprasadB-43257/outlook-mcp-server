@@ -1,4 +1,5 @@
 """Simplified Outlook MCP Server with three main tools."""
+# Author: Hemprasad Badgujar
 
 import asyncio
 import logging

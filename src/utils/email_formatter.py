@@ -1,4 +1,5 @@
 """Simple email formatting for AI-readable responses."""
+# Author: Hemprasad Badgujar
 
 from collections import defaultdict
 from datetime import datetime

@@ -1,29 +1,43 @@
-# Outlook MCP Server
+<p align="center">
+  <img src="https://img.shields.io/badge/Outlook-MCP%20Server-0078D4?style=for-the-badge&logo=microsoft-outlook&logoColor=white" alt="Outlook MCP Server" />
+</p>
 
-> **Bring your Outlook mailboxes into the Model Context Protocol.**  
-> Search, analyze, and surface email chains for AI assistants—with support for personal and shared mailboxes, parallel search, and near-instant AdvancedSearch.
+<h1 align="center">📬 Outlook MCP Server</h1>
 
----
+<p align="center">
+  <strong>Bring your Outlook mailboxes into the Model Context Protocol.</strong><br/>
+  Search, analyze, and surface email chains for AI assistants—with support for personal and shared mailboxes, parallel search, and near-instant AdvancedSearch.
+</p>
 
-## Table of Contents
-
-- [Features](#-features)
-- [Requirements](#-requirements)
-- [Quick Start](#-quick-start)
-- [How to test](#-how-to-test)
-- [Configuration](#-configuration)
-- [Tools](#-tools)
-- [Search & Performance](#-search--performance)
-- [MCP configuration](#-mcp-configuration)
-- [Enable Outlook search (AdvancedSearch)](#-enable-outlook-search-advancedsearch)
-- [Troubleshooting](#-troubleshooting)
-- [Project Structure](#-project-structure)
-- [Security](#-security)
-- [Contributing](#-contributing)
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.8+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.8+" />
+  <img src="https://img.shields.io/badge/Platform-Windows-0078D6?style=flat-square&logo=windows&logoColor=white" alt="Windows" />
+  <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License MIT" />
+  <img src="https://img.shields.io/badge/MCP-1.0+-purple?style=flat-square" alt="MCP 1.0+" />
+</p>
 
 ---
 
-## Features
+## 📑 Table of Contents
+
+- [✨ Features](#-features)
+- [📋 Requirements](#-requirements)
+- [🚀 Quick Start](#-quick-start)
+- [🧪 How to Test](#-how-to-test)
+- [⚙️ Configuration](#️-configuration)
+- [🔧 Tools](#-tools)
+- [🔍 Search & Performance](#-search--performance)
+- [🔌 MCP Configuration](#-mcp-configuration)
+- [📇 Enable Outlook Search (AdvancedSearch)](#-enable-outlook-search-advancedsearch)
+- [🔧 Troubleshooting](#-troubleshooting)
+- [📁 Project Structure](#-project-structure)
+- [🔒 Security](#-security)
+- [🤝 Contributing](#-contributing)
+- [👤 Author](#-author)
+
+---
+
+## ✨ Features
 
 | Area | Capability |
 |------|-------------|
@@ -34,7 +48,7 @@
 | **Server** | Non-blocking async, config reload, structured errors |
 
 - **Multi-Mailbox** — Access personal inbox and one or more shared mailboxes.
-- **AdvancedSearch** — Uses Outlook’s index for fast subject + body search.
+- **AdvancedSearch** — Uses Outlook's index for fast subject + body search.
 - **Parallel Search** — Personal and shared mailboxes searched concurrently.
 - **Full Chains** — Returns full email bodies and conversation grouping.
 - **Configurable** — Cache, workers, batch size, retries, and more in `config.properties`.
@@ -42,7 +56,7 @@
 
 ---
 
-## Requirements
+## 📋 Requirements
 
 | Requirement | Details |
 |-------------|---------|
@@ -53,7 +67,7 @@
 
 ---
 
-## Quick Start
+## 🚀 Quick Start
 
 ```bash
 # 1. Clone and enter project
@@ -75,7 +89,7 @@ python outlook_mcp.py
 
 ---
 
-## How to test
+## 🧪 How to Test
 
 ### 1. Unit tests (no Outlook required)
 
@@ -118,7 +132,7 @@ Full end-to-end testing (Outlook connection and search) must be done manually on
 
 ---
 
-## Configuration
+## ⚙️ Configuration
 
 All options live in `config.properties`. Reload at runtime with `config.reload()`.
 
@@ -164,7 +178,7 @@ All options live in `config.properties`. Reload at runtime with `config.reload()
 
 ---
 
-## Tools
+## 🔧 Tools
 
 ### 1. `check_mailbox_access` (health check)
 
@@ -208,7 +222,7 @@ Each email in the response includes **entry_id**. Use it with `reply_to_email` a
 
 ### 3. `get_latest_emails`
 
-Returns the **N most recent emails** from Inbox (no search phrase). Use for “last email”, “latest 10 emails”, or when you need the most recent messages regardless of content.
+Returns the **N most recent emails** from Inbox (no search phrase). Use for "last email", "latest 10 emails", or when you need the most recent messages regardless of content.
 
 | | |
 |---|---|
@@ -258,9 +272,9 @@ Ideas for later: list_folders, move_email, mark_read/mark_unread, delete_email, 
 
 ---
 
-## Search & Performance
+## 🔍 Search & Performance
 
-- **AdvancedSearch** — Uses Outlook’s index; subject and body; case-insensitive phrase match; typically sub-second to a few seconds.
+- **AdvancedSearch** — Uses Outlook's index; subject and body; case-insensitive phrase match; typically sub-second to a few seconds.
 - **Fallback** — If AdvancedSearch fails (e.g. indexing off), falls back to subject-only Restrict and optional iteration.
 - **Parallel search** — Personal and each shared mailbox can be searched in parallel (configurable workers).
 - **Caching** — Results cached by query and mailbox selection; TTL and max entries configurable.
@@ -271,7 +285,7 @@ Ideas for later: list_folders, move_email, mark_read/mark_unread, delete_email, 
 
 ---
 
-## MCP configuration
+## 🔌 MCP Configuration
 
 Add this server to your MCP client so tools (check_mailbox_access, get_email_chain, get_latest_emails, send_email, reply_to_email, forward_email) are available. Use the **full path** to your Python executable and to `outlook_mcp.py`. Outlook must be running on the same Windows machine.
 
@@ -314,7 +328,7 @@ In Cursor: **Settings → Cursor Settings → MCP** (or edit the MCP config file
 
 ### Generic MCP config (any client)
 
-Any MCP client that supports stdio transport can use this server. Put the server entry in your client’s MCP config:
+Any MCP client that supports stdio transport can use this server. Put the server entry in your client's MCP config:
 
 ```json
 {
@@ -334,7 +348,7 @@ The server runs over stdio; no extra env vars are required. Configure mailboxes 
 
 ---
 
-## Enable Outlook search (AdvancedSearch)
+## 📇 Enable Outlook search (AdvancedSearch)
 
 If you see "AdvancedSearch unavailable" in logs, the server uses a fallback and still returns results. To use the faster index-based search (AdvancedSearch), enable Outlook indexing:
 
@@ -370,18 +384,18 @@ If you see "AdvancedSearch unavailable" in logs, the server uses a fallback and 
 
 ---
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
 | Issue | What to do |
 |-------|------------|
 | **"Outlook.Application" error** | Use desktop Outlook (not web); start Outlook before the server. |
 | **Security dialog** | Normal on first access; click Allow. Optionally enable `use_extended_mapi_login`. |
 | **Shared mailbox not accessible** | Check permissions, address in config, and that the mailbox is in your profile. |
-| **Shared mailbox: "registry or installation problem"** | Usually means the shared mailbox address is invalid or a placeholder. In `config.properties`: set `shared_mailbox_email` to your **real** shared mailbox address (e.g. `team@yourcompany.com`), or leave it **empty** if you don’t use a shared mailbox. The default `your-shared-mailbox@example.com` will always fail. |
+| **Shared mailbox: "registry or installation problem"** | Usually means the shared mailbox address is invalid or a placeholder. In `config.properties`: set `shared_mailbox_email` to your **real** shared mailbox address (e.g. `team@yourcompany.com`), or leave it **empty** if you don't use a shared mailbox. The default `your-shared-mailbox@example.com` will always fail. |
 | **"AdvancedSearch unavailable (using fallback search)" in logs** | Normal in some Outlook setups. The server automatically uses a fallback (subject/folder filter) and you still get results. For faster index-based search, enable Outlook indexing (File → Options → Search → Indexing Options). |
 | **Cursor MCP panel shows [error] and "undefined" for "Processing request of type..."** | Those lines are INFO logs from the MCP SDK (SubscribeRequest, ListToolsRequest, etc.), not from this server. The Outlook MCP server sets the SDK logger to WARNING so they are suppressed. If you still see them, they are harmless; the server is working. |
 | **No search results** | Confirm matching emails exist; try broader terms; check indexing. |
-| **Slow search** | Narrow search terms; lower `max_search_results`; ensure Outlook isn’t syncing heavily. |
+| **Slow search** | Narrow search terms; lower `max_search_results`; ensure Outlook isn't syncing heavily. |
 
 **Debug logging:**
 
@@ -392,26 +406,26 @@ logging.basicConfig(level=logging.DEBUG)
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 Outlook-MCP-Server/
 ├── outlook_mcp.py              # Entrypoint
 ├── requirements.txt            # mcp, pywin32
-├── requirements-ci.txt        # CI (no pywin32)
-├── requirements-dev.txt       # flake8, mypy
-├── pyproject.toml             # Lint/tool config
+├── requirements-ci.txt         # CI (no pywin32)
+├── requirements-dev.txt        # flake8, mypy
+├── pyproject.toml              # Lint/tool config
 ├── src/
 │   ├── config/
 │   │   ├── config_reader.py    # Load, validate, reload
-│   │   └── config.properties  # User settings
+│   │   └── config.properties   # User settings
 │   ├── tools/
-│   │   └── outlook_tools.py   # MCP tool definitions
+│   │   └── outlook_tools.py    # MCP tool definitions
 │   └── utils/
-│       ├── outlook_client.py  # Outlook COM + search + cache
-│       └── email_formatter.py # Format for AI
+│       ├── outlook_client.py   # Outlook COM + search + cache
+│       └── email_formatter.py  # Format for AI
 ├── .github/workflows/
-│   └── test.yml               # Lint + unit tests
+│   └── test.yml                # Lint + unit tests
 └── tests/
     ├── conftest.py
     ├── test_config_reader.py
@@ -421,17 +435,17 @@ Outlook-MCP-Server/
 
 ---
 
-## Security
+## 🔒 Security
 
 - **Local only** — Server runs locally and talks to Outlook via COM.
-- **No stored credentials** — Uses the current Windows user’s Outlook profile.
+- **No stored credentials** — Uses the current Windows user's Outlook profile.
 - **Permission dialogs** — Windows may prompt for Outlook access; allow as needed.
 - **Logging** — Does not log email addresses or sensitive config in normal operation.
 - **Scope** — Limit to the mailboxes you configure (personal + listed shared).
 
 ---
 
-## Contributing
+## 🤝 Contributing
 
 1. Fork the repo  
 2. Create a feature branch  
@@ -440,13 +454,21 @@ Outlook-MCP-Server/
 
 ---
 
-## License
+## 📄 License
 
 MIT — see LICENSE.
 
 ---
 
-## Acknowledgments
+## 🙏 Acknowledgments
 
 - [Model Context Protocol](https://modelcontextprotocol.io)
 - [pywin32](https://github.com/mhammond/pywin32) for the Outlook COM interface
+
+---
+
+## 👤 Author
+
+**Hemprasad Badgujar**
+
+*Outlook MCP Server* — Bring Outlook into the Model Context Protocol.

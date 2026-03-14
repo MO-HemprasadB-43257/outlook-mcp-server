@@ -1,4 +1,5 @@
 """Simple test script to verify Outlook MCP Server setup."""
+# Author: Hemprasad Badgujar
 
 import asyncio
 import sys

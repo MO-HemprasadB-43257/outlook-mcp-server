@@ -1,4 +1,6 @@
 """Pytest configuration: add project root to path."""
+# Author: Hemprasad Badgujar
+
 import sys
 from pathlib import Path
 

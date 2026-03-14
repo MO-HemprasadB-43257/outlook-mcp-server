@@ -1,4 +1,6 @@
 """Unit tests for ConfigReader."""
+# Author: Hemprasad Badgujar
+
 import sys
 from pathlib import Path
 

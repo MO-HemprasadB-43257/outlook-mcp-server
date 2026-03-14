@@ -4,6 +4,7 @@ Config file is resolved in order: (1) same directory as this module (src/config/
 (2) current working directory. Run from project root (e.g. python outlook_mcp.py)
 so that src/config/config.properties is found.
 """
+# Author: Hemprasad Badgujar
 
 import logging
 import os
