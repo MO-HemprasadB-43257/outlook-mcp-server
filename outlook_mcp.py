@@ -9,7 +9,7 @@ from typing import Any, Optional, Sequence
 
 # Check if running on Windows
 if platform.system() != 'Windows':
-    print("[ERROR] Outlook MCP Server requires Windows with Microsoft Outlook installed")
+    print("[ERROR] Outlook MCP Server requires Windows with Microsoft Outlook")
     print(f"   Current platform: {platform.system()}")
     print("\n[INFO] To use this server:")
     print("   1. Run on a Windows machine with Outlook installed")
@@ -25,7 +25,11 @@ try:
     from src.config.config_reader import config
     from src.tools.outlook_tools import get_tools
     from src.utils.outlook_client import outlook_client
-    from src.utils.email_formatter import format_mailbox_status, format_email_chain, format_email_chain_to_json
+    from src.utils.email_formatter import (
+        format_mailbox_status,
+        format_email_chain,
+        format_email_chain_to_json,
+    )
 except ImportError as e:
     print(f"[ERROR] Import Error: {e}")
     print("\n[INFO] Please install required dependencies:")
@@ -34,9 +38,11 @@ except ImportError as e:
     sys.exit(1)
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
-# Reduce MCP SDK noise: "Processing request of type X" is INFO; Cursor may show it as [error]. Suppress it.
+# Reduce MCP SDK noise; suppress it.
 logging.getLogger("mcp").setLevel(logging.WARNING)
 
 
@@ -58,7 +64,6 @@ async def list_tools() -> list[types.Tool]:
     return get_tools()
 
 
-
 # === Tool Handlers ===
 async def handle_check_mailbox_access() -> Sequence[types.TextContent]:
     logger.info("Checking mailbox access...")
@@ -71,14 +76,18 @@ async def handle_check_mailbox_access() -> Sequence[types.TextContent]:
         logger.exception("Error checking mailbox access: %s", e)
         error_response = {
             "status": "error",
-            "message": "Could not check mailbox access. Ensure Outlook is running and permission was granted.",
+            "message": (
+                "Could not check mailbox access. Ensure Outlook is running "
+                "and permission was granted."
+            ),
             "troubleshooting": [
                 "Make sure Outlook is running",
-                "Grant permission when security dialog appears", 
-                "Check network connectivity"
-            ]
+                "Grant permission when security dialog appears",
+                "Check network connectivity",
+            ],
         }
         return [types.TextContent(type="text", text=str(error_response))]
+
 
 async def handle_get_email_chain(
     search_text: str, include_personal: bool, include_shared: bool, include_body: bool = True
@@ -91,9 +100,12 @@ async def handle_get_email_chain(
             include_personal=include_personal,
             include_shared=include_shared,
         )
-        formatted_result = format_email_chain(emails, search_text, include_body=include_body)
+        formatted_result = format_email_chain(
+            emails, search_text, include_body=include_body
+        )
         logger.info("Found %s emails containing '%s'", len(emails), search_text)
-        return [types.TextContent(type="text", text=format_email_chain_to_json(formatted_result))]
+        text = format_email_chain_to_json(formatted_result)
+        return [types.TextContent(type="text", text=text)]
     except Exception as e:
         logger.exception("Error searching emails: %s", e)
         error_response = {
@@ -101,10 +113,10 @@ async def handle_get_email_chain(
             "search_text": search_text,
             "message": "Could not search emails. Verify Outlook connection and try again.",
             "troubleshooting": [
-                "Verify Outlook connection", 
+                "Verify Outlook connection",
                 "Use specific search terms for best results",
-                "Ensure mailboxes are accessible"
-            ]
+                "Ensure mailboxes are accessible",
+            ],
         }
         return [types.TextContent(type="text", text=str(error_response))]
 
@@ -121,19 +133,27 @@ async def handle_get_latest_emails(
             include_personal=include_personal,
             include_shared=include_shared,
         )
-        formatted_result = format_email_chain(emails, "latest", include_body=include_body)
+        formatted_result = format_email_chain(
+            emails, "latest", include_body=include_body
+        )
         logger.info("Returned %s latest emails", len(emails))
-        return [types.TextContent(type="text", text=format_email_chain_to_json(formatted_result))]
+        text = format_email_chain_to_json(formatted_result)
+        return [types.TextContent(type="text", text=text)]
     except Exception as e:
         logger.exception("Error fetching latest emails: %s", e)
         error_response = {
             "status": "error",
-            "message": "Could not fetch latest emails. Verify Outlook connection and try again.",
+            "message": (
+                "Could not fetch latest emails. "
+                "Verify Outlook connection and try again."
+            ),
         }
         return [types.TextContent(type="text", text=str(error_response))]
 
 
-async def handle_send_email(to: str, subject: str, body: str, cc: Optional[str], bcc: Optional[str]) -> Sequence[types.TextContent]:
+async def handle_send_email(
+    to: str, subject: str, body: str, cc: Optional[str], bcc: Optional[str]
+) -> Sequence[types.TextContent]:
     logger.info("Sending email to %s", to)
     try:
         result = await asyncio.to_thread(
@@ -149,11 +169,16 @@ async def handle_send_email(to: str, subject: str, body: str, cc: Optional[str],
         logger.exception("Error sending email: %s", e)
         return [types.TextContent(type="text", text=str({
             "status": "error",
-            "message": "Could not send email. Verify Outlook is running and try again.",
+            "message": (
+                "Could not send email. "
+                "Verify Outlook is running and try again."
+            ),
         }))]
 
 
-async def handle_reply_to_email(entry_id: str, body: Optional[str], reply_all: bool) -> Sequence[types.TextContent]:
+async def handle_reply_to_email(
+    entry_id: str, body: Optional[str], reply_all: bool
+) -> Sequence[types.TextContent]:
     logger.info("Replying to email %s", entry_id[:50] if entry_id else "")
     try:
         result = await asyncio.to_thread(
@@ -167,11 +192,16 @@ async def handle_reply_to_email(entry_id: str, body: Optional[str], reply_all: b
         logger.exception("Error replying to email: %s", e)
         return [types.TextContent(type="text", text=str({
             "status": "error",
-            "message": "Could not reply. Verify entry_id from get_email_chain and Outlook connection.",
+            "message": (
+                "Could not reply. Verify entry_id from get_email_chain "
+                "and Outlook connection."
+            ),
         }))]
 
 
-async def handle_forward_email(entry_id: str, to: str, body: Optional[str]) -> Sequence[types.TextContent]:
+async def handle_forward_email(
+    entry_id: str, to: str, body: Optional[str]
+) -> Sequence[types.TextContent]:
     logger.info("Forwarding email to %s", to)
     try:
         result = await asyncio.to_thread(
@@ -185,7 +215,10 @@ async def handle_forward_email(entry_id: str, to: str, body: Optional[str]) -> S
         logger.exception("Error forwarding email: %s", e)
         return [types.TextContent(type="text", text=str({
             "status": "error",
-            "message": "Could not forward. Verify entry_id from get_email_chain and Outlook connection.",
+            "message": (
+                "Could not forward. Verify entry_id from get_email_chain "
+                "and Outlook connection."
+            ),
         }))]
 
 
@@ -278,9 +311,9 @@ async def list_resources() -> list[types.Resource]:
     return [
         types.Resource(
             uri="outlook-mcp://config",
-            name="Current Configuration", 
+            name="Current Configuration",
             description="Show current configuration settings",
-            mimeType="text/plain"
+            mimeType="text/plain",
         )
     ]
 
@@ -315,28 +348,26 @@ async def main():
     # Important notes
     print("\n[INFO] Important Notes:")
     print("   * Make sure Microsoft Outlook is running")
-    print("   * Grant permission when security dialog appears")  
+    print("   * Grant permission when security dialog appears")
     print("   * Update config.properties with your shared mailbox details")
     print("   * Server searches ALL folders, not just Inbox")
     
     shared_email = config.get("shared_mailbox_email")
-    if not shared_email or "your-shared-mailbox" in str(shared_email).lower() or "example.com" in str(shared_email).lower():
-        print("\n[WARNING] Shared mailbox not configured or still using placeholder!")
+    lower = str(shared_email).lower() if shared_email else ""
+    if not shared_email or "your-shared-mailbox" in lower or "example.com" in lower:
+        print("\n[WARNING] Shared mailbox not configured or still placeholder!")
         print("   Edit src/config/config.properties:")
-        print("   - Set shared_mailbox_email to your real shared mailbox (e.g. team@company.com), or")
-        print("   - Leave it empty (shared_mailbox_email=) to skip shared mailbox and avoid errors.")
-    
+        print("   - Set shared_mailbox_email to real address, or")
+        print("   - Leave empty to skip shared mailbox.")
     print("\n[TOOLS] Available Tools:")
     print("   1. check_mailbox_access - Test connection and access")
     print("   2. get_email_chain - Search emails by text in subject AND body")
     print("   3. get_latest_emails - Get N most recent Inbox emails (no search phrase)")
     print("   4. send_email - Compose and send a new email")
-    print("   5. reply_to_email - Reply (use entry_id from get_email_chain or get_latest_emails)")
-    print("   6. forward_email - Forward (use entry_id from get_email_chain or get_latest_emails)")
-    
+    print("   5. reply_to_email - Reply (entry_id from get_email_chain)")
+    print("   6. forward_email - Forward (entry_id from get_email_chain)")
     print("\n[READY] Server ready! Listening for MCP client connections...")
     print("=" * 60)
-    
     # Start server
     async with stdio_server() as (read_stream, write_stream):
         await app.run(read_stream, write_stream, app.create_initialization_options())
