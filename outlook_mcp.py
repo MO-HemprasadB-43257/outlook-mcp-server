@@ -341,17 +341,17 @@ async def main():
     print("=" * 60)
     print("[STARTING] Outlook MCP Server")
     print("=" * 60)
-    
+
     # Show configuration
     config.show_config()
-    
+
     # Important notes
     print("\n[INFO] Important Notes:")
     print("   * Make sure Microsoft Outlook is running")
     print("   * Grant permission when security dialog appears")
     print("   * Update config.properties with your shared mailbox details")
     print("   * Server searches ALL folders, not just Inbox")
-    
+
     shared_email = config.get("shared_mailbox_email")
     lower = str(shared_email).lower() if shared_email else ""
     if not shared_email or "your-shared-mailbox" in lower or "example.com" in lower:

@@ -49,8 +49,13 @@ def format_mailbox_status(access_result: Dict[str, Any]) -> Dict[str, Any]:
         },
         "errors": access_result.get("errors", []),
         "notes": {
-            "security_dialog": "You may need to grant permission when Outlook security dialog appears",
-            "retention_info": "Search scope is limited by retention policy settings"
+            "security_dialog": (
+                "You may need to grant permission when Outlook security "
+                "dialog appears."
+            ),
+            "retention_info": (
+                "Search scope is limited by retention policy settings."
+            ),
         }
     }
 
@@ -63,7 +68,7 @@ def format_email_chain(
     Args:
         emails: List of email dicts.
         search_subject: Subject or phrase searched.
-        include_body: If True, include full email body in each formatted email; if False, only body_preview.
+        include_body: If True include full body; if False only body_preview.
     Returns:
         Formatted email chain analysis.
     """
@@ -98,10 +103,13 @@ def format_email_chain(
         }
         formatted_conversations.append(formatted_conv)
 
-    formatted_conversations.sort(
-        key=lambda x: max([parse_iso_time(e["received_time"]) for e in x["emails"] if e.get("received_time")]),
-        reverse=True
-    )
+    def _max_time(c):
+        return max(
+            parse_iso_time(e["received_time"])
+            for e in c["emails"]
+            if e.get("received_time")
+        )
+    formatted_conversations.sort(key=_max_time, reverse=True)
 
     sorted_emails = sorted(
         emails,
@@ -118,12 +126,14 @@ def format_email_chain(
 
 
 def format_email_chain_to_json(formatted: Dict[str, Any]) -> str:
-    """Return formatted email chain as JSON string for MCP tool response (structured, parseable per MCP)."""
+    """Return email chain as JSON for MCP tool (structured, parseable)."""
     return json.dumps(_serialize_for_json(formatted), indent=2, default=str)
 
 
-def format_email_chain_pretty_text(formatted: Dict[str, Any], width: int = 72) -> str:
-    """Return formatted email chain as readable plain text (for scripts like list_latest_emails, not for MCP)."""
+def format_email_chain_pretty_text(
+    formatted: Dict[str, Any], width: int = 72
+) -> str:
+    """Return email chain as readable plain text (e.g. list_latest_emails)."""
     lines: List[str] = []
     status = formatted.get("status", "")
     if status == "no_emails_found":

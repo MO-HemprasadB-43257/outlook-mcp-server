@@ -168,12 +168,13 @@ class OutlookClient:
         return result
     
     # === Search Methods ===
-    def search_emails(self, search_text: str, 
-                     include_personal: bool = True, 
-                     include_shared: bool = True) -> List[Dict[str, Any]]:
-        """
-        Search emails in both subject and body using exact phrase matching with parallel execution.
-        """
+    def search_emails(
+        self,
+        search_text: str,
+        include_personal: bool = True,
+        include_shared: bool = True,
+    ) -> List[Dict[str, Any]]:
+        """Search emails in subject and body using exact phrase, parallel."""
         if not self.connected:
             if not self.connect():
                 return []
@@ -228,10 +229,10 @@ class OutlookClient:
             # Sequential search for single mailbox
             if include_personal:
                 personal_emails = self._search_mailbox_comprehensive(
-                    self.namespace.GetDefaultFolder(6), 
-                    search_text, 
+                    self.namespace.GetDefaultFolder(6),
+                    search_text,
                     'personal',
-                    max_results
+                    max_results,
                 )
                 all_emails.extend(personal_emails)
                 logger.info("Found %s emails in personal mailbox", len(personal_emails))
@@ -255,7 +256,10 @@ class OutlookClient:
                                 max_results - len(all_emails),
                             )
                             all_emails.extend(found)
-                            logger.info("Found %s emails in shared mailbox %s", len(found), shared_email)
+                            logger.info(
+                                "Found %s emails in shared mailbox %s",
+                                len(found), shared_email,
+                            )
                     except Exception as e:
                         logger.error("Error searching shared mailbox %s: %s", shared_email, e)
         all_emails.sort(key=_received_time_for_sort, reverse=True)
@@ -281,11 +285,14 @@ class OutlookClient:
             )
         return limited_results
     
-    def search_emails_by_subject(self, subject: str, 
-                                include_personal: bool = True, 
-                                include_shared: bool = True) -> List[Dict[str, Any]]:
-        """
-        Legacy method - redirects to search_emails for backward compatibility.
+    def search_emails_by_subject(
+        self,
+        subject: str,
+        include_personal: bool = True,
+        include_shared: bool = True,
+    ) -> List[Dict[str, Any]]:
+        """Legacy: redirects to search_emails for backward compatibility.
+
         Args:
             subject (str): Subject to search for.
             include_personal (bool): Search personal mailbox.
@@ -539,8 +546,7 @@ class OutlookClient:
                 logger.error("Error searching other folders: %s", e)
         
         return emails
-    
-    
+
     def _search_other_folders(
         self,
         store: Any,
