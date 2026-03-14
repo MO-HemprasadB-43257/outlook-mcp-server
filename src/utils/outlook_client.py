@@ -284,7 +284,7 @@ class OutlookClient:
                 len(limited_results),
             )
         return limited_results
-    
+
     def search_emails_by_subject(
         self,
         subject: str,
@@ -426,7 +426,7 @@ class OutlookClient:
             return []
         finally:
             pythoncom.CoUninitialize()
-    
+
     def _search_mailbox_comprehensive(
         self,
         inbox_folder: Any,
@@ -462,7 +462,7 @@ class OutlookClient:
                 SearchSubFolders=False,  # Don't search subfolders for inbox
                 Tag="EmailBodySearch"  # Unique tag for this search
             )
-            
+
             # Poll for completion with reduced timeout for responsiveness
             start_time = time.time()
             while not search.SearchComplete:
@@ -470,7 +470,7 @@ class OutlookClient:
                 if time.time() - start_time > 15:  # Reduced timeout to 15 seconds
                     logger.warning("AdvancedSearch timed out after 15 seconds")
                     break
-            
+
             if search.SearchComplete:
                 results = search.Results
                 result_count = min(results.Count, max_results)
@@ -499,7 +499,7 @@ class OutlookClient:
                         break
             else:
                 logger.warning("AdvancedSearch did not complete successfully")
-        
+
         except Exception as e:
             logger.info(
                 "AdvancedSearch unavailable (using fallback search): %s",
